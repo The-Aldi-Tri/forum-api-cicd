@@ -82,7 +82,7 @@ describe('LikeUnlikeUseCase', () => {
     await likeUnlikeUseCase.execute(useCasePayload);
 
     // Assert
-    expect(mockThreadRepository.verifyThreadExist).not.toBeCalledWith(useCasePayload.threadId);
+    expect(mockThreadRepository.verifyThreadExist).toBeCalledWith(useCasePayload.threadId);
     expect(mockCommentRepository.verifyCommentExist).toBeCalledWith(useCasePayload.commentId);
     expect(mockLikeRepository.checkIfUserHasLikedComment).toBeCalledWith({
       commentId: useCasePayload.commentId,
