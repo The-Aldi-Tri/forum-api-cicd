@@ -1,0 +1,38 @@
+name: FORUM-API-CICD
+services:
+  forum-api:
+    build: ./forum-api
+    networks:
+      - main-network
+      - internal-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+    restart: unless-stopped
+    command: >
+      sh -c "npm run migrate up
+      && npm run start"
+
+  postgres:
+    image: postgres:16.4
+    env_file: ./forum-api/.env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+volumes:
+  pgdata:
+
+networks:
+  main-network:
+    external: true
+  internal-network:
