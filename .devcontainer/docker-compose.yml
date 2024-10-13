@@ -1,0 +1,34 @@
+name: FORUM-API-CICD
+services:
+  devcontainer:
+    image: node:14.17.0-buster
+    volumes:
+      - ..:/workspaces:cached
+    command: sleep infinity
+    networks:
+      - forum-api-cicd-network
+
+  postgres:
+    image: postgres:16.4
+    restart: unless-stopped
+    env_file: ../forum-api/.env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - forum-api-cicd-network
+
+  postgres-test:
+    image: postgres:16.4
+    restart: unless-stopped
+    env_file: ../forum-api/.env.test
+    volumes:
+      - pgdatatest:/var/lib/postgresql/data
+    networks:
+      - forum-api-cicd-network
+
+volumes:
+  pgdata:
+  pgdatatest:
+
+networks:
+  forum-api-cicd-network:
