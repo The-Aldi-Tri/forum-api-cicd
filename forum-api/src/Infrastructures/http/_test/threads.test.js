@@ -7,6 +7,7 @@ const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
+const LikesTableTestHelper = require('../../../../tests/LikesTableTestHelper');
 
 describe('/threads endpoint', () => {
   let accessToken;
@@ -192,6 +193,10 @@ describe('/threads endpoint', () => {
       };
       await RepliesTableTestHelper.addReply(replyData2);
 
+      await LikesTableTestHelper.addLike({ id: 'like-1', commentId: commentData1.id, userId: userData1.id });
+      await LikesTableTestHelper.addLike({ id: 'like-2', commentId: commentData1.id, userId: userData2.id });
+      await LikesTableTestHelper.addLike({ id: 'like-3', commentId: commentData2.id, userId: userData1.id });
+
       const expectedThread = {
         id: threadData.id,
         title: threadData.title,
@@ -204,6 +209,7 @@ describe('/threads endpoint', () => {
             content: commentData1.content,
             date: commentData1.date.toISOString(),
             username: userData1.username,
+            likeCount: 2,
             replies: [
               {
                 id: replyData1.id,
@@ -224,6 +230,7 @@ describe('/threads endpoint', () => {
             content: '**komentar telah dihapus**',
             date: commentData2.date.toISOString(),
             username: userData2.username,
+            likeCount: 1,
             replies: [],
           },
         ],
