@@ -1,5 +1,6 @@
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
+const LikeRepository = require('../../../Domains/likes/LikeRepository');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 const GetThreadUseCase = require('../GetThreadUseCase');
 
@@ -18,6 +19,7 @@ describe('GetThreadUseCase', () => {
     /** creating dependency of use case */
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
+    const mockLikeRepository = new LikeRepository();
     const mockReplyRepository = new ReplyRepository();
 
     /** mocking needed function */
@@ -51,6 +53,14 @@ describe('GetThreadUseCase', () => {
         },
       ]));
 
+    mockLikeRepository.countCommentLikes = jest
+      .fn((commentId) => {
+        if (commentId === 'comment-123') {
+          return Promise.resolve(1);
+        }
+        return Promise.resolve(2);
+      });
+
     mockReplyRepository.getRepliesByCommentId = jest
       .fn((commentId) => {
         if (commentId === 'comment-123') {
@@ -78,6 +88,7 @@ describe('GetThreadUseCase', () => {
     const getThreadUseCase = new GetThreadUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
+      likeRepository: mockLikeRepository,
       replyRepository: mockReplyRepository,
     });
 
@@ -88,8 +99,12 @@ describe('GetThreadUseCase', () => {
     expect(mockThreadRepository.verifyThreadExist).toBeCalledWith(useCasePayload);
     expect(mockThreadRepository.getThreadById).toBeCalledWith(useCasePayload);
     expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(useCasePayload);
+    expect(mockReplyRepository.getRepliesByCommentId).toHaveBeenCalledTimes(2);
     expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith('comment-123');
-    expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith('comment-234');
+    expect(mockReplyRepository.getRepliesByCommentId).toHaveBeenLastCalledWith('comment-234');
+    expect(mockLikeRepository.countCommentLikes).toHaveBeenCalledTimes(2);
+    expect(mockLikeRepository.countCommentLikes).toBeCalledWith('comment-123');
+    expect(mockLikeRepository.countCommentLikes).toHaveBeenLastCalledWith('comment-234');
 
     expect(thread)
       .toEqual(
@@ -107,6 +122,7 @@ describe('GetThreadUseCase', () => {
                 date: new Date('2021-08-08T07:22:33.555Z'),
                 content: 'sebuah comment',
                 is_deleted: false,
+                likeCount: 1,
                 replies: [
                   new ReplyDetails({
                     id: 'reply-123',
@@ -130,6 +146,7 @@ describe('GetThreadUseCase', () => {
                 date: new Date('2021-08-08T07:26:21.338Z'),
                 content: 'some racist comment',
                 is_deleted: true,
+                likeCount: 2,
                 replies: [],
               }),
             ],
